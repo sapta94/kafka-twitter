@@ -6,11 +6,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
 
 public class ProducerCallbackDemo {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
 
         String bootstrapServers = "127.0.0.1:9092";
         final Logger logger = LoggerFactory.getLogger(ProducerCallbackDemo.class);
@@ -25,10 +26,12 @@ public class ProducerCallbackDemo {
         KafkaProducer<String, String> producer = new KafkaProducer<String, String>(properties);
 
         for(int i=0;i<10;i++){
+
+            String key = Integer.toString(i);
             // create a producer record
             ProducerRecord<String, String> record =
-                    new ProducerRecord<String, String>("first_topic", "hello world "+Integer.toString(i));
-
+                    new ProducerRecord<String, String>("first_topic", key,"hello world "+Integer.toString(i));
+            logger.info("key = "+key);
             // send data - asynchronous
             producer.send(record, new Callback() {
                 //runs every time a record is suceesfully executed or error is thrown
@@ -42,7 +45,7 @@ public class ProducerCallbackDemo {
                         logger.error("Some error occured",e);
                     }
                 }
-            });
+            }).get();
         }
 
 
