@@ -17,7 +17,7 @@ public class ConsumerDemo {
     public static void main(String[] args) {
         Logger logger = LoggerFactory.getLogger(ConsumerDemo.class);
         String bootstrapServer = "127.0.0.1:9092";
-        String groupId = "java_app";
+        String groupId = "java_app_2";
         String topic = "first_topic";
 
         //create consumer config
