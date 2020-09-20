@@ -11,6 +11,8 @@ import com.twitter.hbc.core.processor.StringDelimitedProcessor;
 import com.twitter.hbc.httpclient.auth.Authentication;
 import com.twitter.hbc.httpclient.auth.OAuth1;
 import org.omg.CORBA.TIMEOUT;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -19,8 +21,13 @@ import java.util.concurrent.TimeUnit;
 
 public class TwitterProducer {
 
-    public TwitterProducer(){}
+    String consumerKey="";
+    String consumerSecret="";
+    String token = "";
+    String tokenSecret = "";
+    Logger logger = LoggerFactory.getLogger(TwitterProducer.class);
 
+    public TwitterProducer(){}
 
     public static void main(String[] args) {
         new TwitterProducer().run();
@@ -39,19 +46,18 @@ public class TwitterProducer {
 
         //loop to send tweets to kafka
         while(!client.isDone()){
+            String msg = null;
             try {
-                String msg = msgQueue.poll(5, TimeUnit.SECONDS);
+                msg = msgQueue.poll(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 client.stop();
             }
+            if (msg!=null){
+                logger.info(msg);
+            }
         }
     }
-
-    String consumerKey="";
-    String consumerSecret="";
-    String token = "";
-    String tokenSecret = "";
 
     public Client createTwitterClient(BlockingQueue<String> msgQueue){
 
