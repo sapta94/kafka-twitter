@@ -18,32 +18,36 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import io.github.cdimascio.dotenv.Dotenv;
 
 public class TwitterProducer {
 
-    String consumerKey="";
-    String consumerSecret="";
-    String token = "";
-    String tokenSecret = "";
-    Logger logger = LoggerFactory.getLogger(TwitterProducer.class);
+    Dotenv dotenv = Dotenv.configure()
+            .directory("/Users/saptarshidey/Documents/kafka-twitter")
+            .ignoreIfMalformed()
+            .ignoreIfMissing()
+            .load();
+
 
     public TwitterProducer(){}
 
     public static void main(String[] args) {
+
         new TwitterProducer().run();
     }
 
     public void run(){
         /** Set up your blocking queues: Be sure to size these properly based on expected TPS of your stream */
         BlockingQueue<String> msgQueue = new LinkedBlockingQueue<String>(1000);
-
+        System.out.println("Setup");
+        System.out.println(dotenv.get("consumerKey"));
         // create a twitter client
         Client client = createTwitterClient(msgQueue);
 
         //Establish connection
         client.connect();
         // create a kafka producer
-
+        System.out.println("connected");
         //loop to send tweets to kafka
         while(!client.isDone()){
             String msg = null;
@@ -54,22 +58,27 @@ public class TwitterProducer {
                 client.stop();
             }
             if (msg!=null){
-                logger.info(msg);
+                System.out.println(msg);
             }
         }
     }
 
     public Client createTwitterClient(BlockingQueue<String> msgQueue){
 
+        String consumerKey=dotenv.get("consumerKey");
+        String consumerSecret=dotenv.get("consumerSecret");
+        String token = dotenv.get("token");
+        String tokenSecret = dotenv.get("tokenSecret");
+
         /** Declare the host you want to connect to, the endpoint, and authentication (basic auth or oauth) */
         Hosts hosebirdHosts = new HttpHosts(Constants.STREAM_HOST);
         StatusesFilterEndpoint hosebirdEndpoint = new StatusesFilterEndpoint();
 
-        List<String> terms = Lists.newArrayList("twitter", "api");
+        List<String> terms = Lists.newArrayList("ipl");
         hosebirdEndpoint.trackTerms(terms);
 
         // These secrets should be read from a config file
-        Authentication hosebirdAuth = new OAuth1("consumerKey", "consumerSecret", "token", "secret");
+        Authentication hosebirdAuth = new OAuth1(consumerKey, consumerSecret, token, tokenSecret);
 
         ClientBuilder builder = new ClientBuilder()
                 .name("Hosebird-Client-01")                              // optional: mainly for the logs
