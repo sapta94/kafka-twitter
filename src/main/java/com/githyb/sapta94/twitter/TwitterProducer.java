@@ -52,6 +52,13 @@ public class TwitterProducer {
         // create a kafka producer
         KafkaProducer producer = createProducer();
 
+        //add a shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Shutting application...");
+            client.stop();
+            producer.close();
+            System.out.println("Shutting application...");
+        }));
 
         System.out.println("connected");
         //loop to send tweets to kafka
@@ -66,7 +73,6 @@ public class TwitterProducer {
             if (msg!=null){
                 System.out.println(msg);
                 producer.send(new ProducerRecord<String, String>("twitter_kafka", null, msg), new Callback() {
-                    @Override
                     public void onCompletion(RecordMetadata recordMetadata, Exception e) {
                         if (e!=null){
                             System.out.println("Some error occured");
